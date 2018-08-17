@@ -28,15 +28,14 @@
   <input id="upload" type="file" accept=".csv" />
   <div id="csv-table"></div>
   <ul id="filters">Filters
-    <li id="add-filter">+</li>
   </ul>
+  <p id="add-filter">+</p>
 
   <script id="csv-uploading">
     var data;
     var columns = [];
     var columnInfo = [];
     var columnTitles = [];
-    var filterRow = [];
 
     document.getElementById("upload").addEventListener("change", upload, false);
     document.getElementById("add-filter").addEventListener("click", addFilter, false);
@@ -82,39 +81,48 @@
 
     var TEXT_OPERATORS = ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;=', 'IN', 'LIKE'];
     var NUM_OPERATORS  = ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;='];
-    var textOpSelector = ['<select class="filter-op">'];
-    var numOpSelector = ['<select class="filter-op">'];
+    var textOpSelector = ['<select class="filter-op', " ", '>'];
+    var numOpSelector  = ['<select class="filter-op$', '" >']; // Need $ as spaceholder, join trims space
+    var filtersApplied = [];
+    var filterRow = [];
 
     for (var i = 0; i < TEXT_OPERATORS.length; i++) {
       textOpSelector.push('<option value="' + TEXT_OPERATORS[i] + '" >' + TEXT_OPERATORS[i] + '</option>')
     }
     textOpSelector.push("</select>");
-    textOpSelector = textOpSelector.join("");
 
     for (var i = 0; i < NUM_OPERATORS.length; i++) {
       numOpSelector.push('<option value="' + NUM_OPERATORS[i] + '" >' + NUM_OPERATORS[i] + '</option>')
     }
     numOpSelector.push("</select>");
-    numOpSelector = numOpSelector.join("");
-    console.log(numOpSelector);
 
     function addFilter() {
+      filterRow = [];
+      var filterIdx = $('#filters')[0].childElementCount;
+
+      var filterColIdx = 'filter-col-' + filterIdx;
+      var filterOpIdx = 'filter-op-' + filterIdx;
+      var filterValIdx = 'filter-value-' + filterIdx;
+
+      var opSelector = columnInfo[0].type == "string" ? textOpSelector : numOpSelector;
+      opSelector.splice(1, 0, filterValIdx);
+      opSelector = opSelector.join("").replace("$", " ");
+
       filterRow.push('<li id="filter">')
-      filterRow.push("<select class='filter-col'>")
+      filterRow.push("<select class='filter-col " + filterColIdx + "' >")
       for (var i = 0; i < columnInfo.length; i++) {
         filterRow.push("<option value=" + columnInfo[i].name + ">" + columnTitles[i] + "</option>")
       }
       filterRow.push("</select>")
-      filterRow.push(columnInfo[0].type == "string" ? textOpSelector : numOpSelector)
-      filterRow.push('<input class="filter-value" type="text"></input>')
+      filterRow.push(opSelector)
+      filterRow.push('<input class="filter-value ' + filterValIdx + '" type="text"></input>')
       filterRow.push('<span class="confirm-filter">&#9989</span>');
       filterRow.push('<span class="remove-filter">&#10006</span>');
       filterRow.push("</li>")
       var colDropdown = filterRow.join("");
       console.log(colDropdown);
-      $("#add-filter").hide();
-      var output = filters.append(colDropdown);
-      console.log(output)
+      // $("#add-filter").hide();
+      filters.append(colDropdown);
 
       $('.remove-filter').hide();
       $('.filter-col').on('change', filterColEdited);
@@ -123,7 +131,8 @@
     }
 
     function filterColEdited() {
-      $('.filter-op').replaceWith(columnInfo[this.selectedIndex].type == "string" ? textOpSelector : numOpSelector);
+      var index = $(this).parent().prevAll().length;
+      $('.filter-op').replaceWith();
     }
 
     function filterOpEdited() {
