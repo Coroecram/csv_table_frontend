@@ -9,6 +9,7 @@
   <meta name="author" content="Michael Budnick">
 
   <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/tabulator.css">
   <link rel="stylesheet" href="css/jquery-ui.css">
   <link rel="stylesheet" href="css/jquery-ui.theme.css">
@@ -26,12 +27,21 @@
 
   <input id="upload" type="file" accept=".csv" />
   <div id="csv-table"></div>
+  <ul id="filters">Filters
+    <li id="add-filter">+</li>
+  </ul>
 
   <script id="csv-uploading">
     var data;
     var columns = [];
+    var columnInfo = [];
+    var columnTitles = [];
+    var selectCols = [];
 
     document.getElementById("upload").addEventListener("change", upload, false);
+    document.getElementById("add-filter").addEventListener("click", addFilter, false);
+    var filters = $("#filters");
+    filters.hide();
 
     function upload(e) {
       var file = e.target.files[0];
@@ -49,9 +59,11 @@
           columns = [];
 
           for (var i = 0; i < headers.length; i++) {
-            columns[i] = { 'title': toTitleCase(headers[i]),
+            columnInfo.push({'name': headers[i], 'type': typeof(data[0][headers[i]])})
+            columnTitles.push(toTitleCase(headers[i]));
+            columns.push({ 'title': toTitleCase(headers[i]),
             'field': headers[i],
-            'sortable': true }
+            'sortable': true });
           }
 
           $("#csv-table").tabulator({'columns': columns,
@@ -62,9 +74,44 @@
                                       'movableColumns':true,
                                       'resizableRows':true
                                     });
-          $("#csv-table").tabulator("setData", data);
+          $("#csv-table").tabulator("setData", data.slice(0,-1));
+          filters.show();
       }
 
+    }
+
+    var TEXT_OPERATORS = ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;=', 'IN', 'LIKE'];
+    var NUM_OPERATORS  = ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;='];
+    var textOpSelector = ['<select class="op-select">'];
+    var numOpSelector = ['<select class="op-select">'];
+
+    for (var i = 0; i < TEXT_OPERATORS.length; i++) {
+      textOpSelector.push("<option value=" + TEXT_OPERATORS[i] + ">" + TEXT_OPERATORS[i] + "</option>")
+    }
+    textOpSelector.push("</select>");
+    textOpSelector = textOpSelector.join("");
+
+    for (var i = 0; i < NUM_OPERATORS.length; i++) {
+      numOpSelector.push("<option value=" + NUM_OPERATORS[i] + ">" + NUM_OPERATORS[i] + "</option>")
+    }
+    numOpSelector.push("</select>");
+    numOpSelector = numOpSelector.join("");
+
+    function addFilter() {
+      selectCols.push('<li id="filter">')
+      selectCols.push("<select id='col-selector'>")
+      for (var i = 0; i < columnInfo.length; i++) {
+        selectCols.push("<option value=" + columnInfo[i].name + ">" + columnTitles[i] + "</option>")
+      }
+      selectCols.push("</select>")
+      selectCols.push(typeof(columnInfo[0].type) == "string" ? textOpSelector : numOpSelector)
+      selectCols.push('<input type="text"></input>')
+      selectCols.push('<span>&#9989</span>');
+      selectCols.push("</li>")
+      var colDropdown = selectCols.join("");
+      console.log(colDropdown);
+      $("#add-filter").hide();
+      filters.append(colDropdown);
     }
 
   </script>
