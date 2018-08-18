@@ -164,10 +164,14 @@
       $("#filters").append(filterRow);
 
       $('.' + filterRemoveIdx).hide();
-      $('.' + filterColIdx).on('change', filterColEdited);
-      $('.' + filterOpIdx).on('change', filterOpEdited);
+      $('.' + filterColIdx).on('change', function() {
+        filterValEdited($('.' + filterConfirmIdx), );
+      });
+      $('.' + filterOpIdx).on('change', function() {
+        filterValEdited($('.' + filterConfirmIdx), );
+      });
       $('.' + filterValIdx).on('input', function() {
-        filterValEdited($(filterConfirmIdx), );
+        filterValEdited($('.' + filterConfirmIdx), );
       });
 
       $('.' + filterConfirmIdx).on('click', function() {
@@ -179,7 +183,6 @@
               'type': operator,
               'value': value
         })
-        console.log('filterAdded ' + filterAdded);
 
         if (filterAdded) {
           $(this).hide();
@@ -198,14 +201,9 @@
         var operator = $('.' + filterOpIdx).val();
         var value = $('.' + filterValIdx).val();
 
-        console.log("column " + column);
-        console.log("operator " + operator);
-        console.log("value " + value);
         removeFilter(filters, {'field': column,
                                'type': operator,
                                'value': value })
-
-        console.log(filters);
 
         $("#csv-table").tabulator("setFilter", filters);
 
@@ -216,10 +214,6 @@
     function filterColEdited() {
       var index = $(this).parent().prevAll().length;
       $('.filter-op').replaceWith();
-    }
-
-    function filterOpEdited() {
-      console.log("edit");
     }
 
     function filterValEdited(confirmEle) {
