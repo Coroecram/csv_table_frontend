@@ -133,6 +133,7 @@
       $('.filter-value').on('input', function() {
         filterValEdited($(filterConfirmIdx), );
       });
+
       $('.' + filterConfirmIdx).on('click', function() {
         var column = $('.' + filterColIdx).val();
         var operator = $('.' + filterOpIdx).val();
@@ -143,6 +144,14 @@
         $("#csv-table").tabulator("setFilter", column, operator, value);
       })
 
+      $('.' + filterRemoveIdx).on('click', function() {
+        var column = $('.' + filterColIdx).val();
+        var operator = $('.' + filterOpIdx).val();
+        var value = $('.' + filterValIdx).val();
+        $("#csv-table").tabulator("removeFilter", column, operator, value);
+
+        $('.' + filterRemoveIdx).parent().remove();
+      })
     }
 
     function filterColEdited() {
