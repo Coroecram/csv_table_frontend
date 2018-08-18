@@ -98,8 +98,26 @@
               filters.splice(i, 1);
         }
       }
+    }
 
-      return filters;
+    function pushFilter(filters, filter) {
+      var dupFilter = false;
+      console.log(filter);
+      for(var i = 0;i < filters.length;i++) {
+        if (filters[i].field == filter.field &
+            filters[i].type  == filter.type &
+            filters[i].value == filter.value) {
+              dupFilter = true;
+        }
+      }
+
+      if(dupFilter) {
+        return false;
+      } else {
+        filters.push(filter);
+        console.log(filters);
+        return true;
+      }
     }
 
     for (var i = 0; i < TEXT_OPERATORS.length; i++) {
@@ -156,19 +174,22 @@
         var column = $('.' + filterColIdx).val();
         var operator = $('.' + filterOpIdx).val();
         var value = $('.' + filterValIdx).val();
-        filters.push({'field': column,
-                      'type': operator,
-                      'value': value
+        var filterAdded = pushFilter(filters, {
+              'field': column,
+              'type': operator,
+              'value': value
         })
-        $(this).hide();
+        console.log('filterAdded ' + filterAdded);
 
+        if (filterAdded) {
+          $(this).hide();
+          $("#csv-table").tabulator("setFilter", filters);
 
-        $("#csv-table").tabulator("setFilter", filters);
-
-        $('.' + filterRemoveIdx).show()
-        if(newFilter == filterConfirmIdx) {
-          $("#add-filter").show();
-          newFilter = '';
+          $('.' + filterRemoveIdx).show()
+          if(newFilter == filterConfirmIdx) {
+            $("#add-filter").show();
+            newFilter = '';
+          }
         }
       })
 
