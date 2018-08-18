@@ -82,10 +82,25 @@
 
     var TEXT_OPERATORS = ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;=', 'IN', 'LIKE'];
     var NUM_OPERATORS  = ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;='];
-    var textOpSelector = ['<select class="filter-op', " ", '>'];
-    var numOpSelector  = ['<select class="filter-op$', '" >']; // Need $ as spaceholder, join trims space
+    var textOpSelector = ['<select class="filter-op$', 'filter-op-0', '" >'];
+    var numOpSelector  = ['<select class="filter-op$', 'filter-op-0', '" >']; // Need $ as spaceholder, join trims space
     var filtersApplied = [];
     var filterRow = [];
+    var filterIdx = 0;
+    var newFilter = '';
+    var filters = [];
+
+    function removeFilter(filters, filter) {
+      for(var i = 0;i < filters.length;i++) {
+        if (filters[i].field == filter.field &
+            filters[i].type == filter.type &
+            filters[i].value == filter.value) {
+              filters.splice(i, 1);
+        }
+      }
+
+      return filters;
+    }
 
     for (var i = 0; i < TEXT_OPERATORS.length; i++) {
       textOpSelector.push('<option value="' + TEXT_OPERATORS[i] + '" >' + TEXT_OPERATORS[i] + '</option>')
@@ -99,7 +114,6 @@
 
     function addFilter() {
       filterRow = [];
-      var filterIdx = $('#filters')[0].childElementCount;
 
       var filterIdxClass = 'filter-' + filterIdx;
       var filterColIdx = 'filter-col-' + filterIdx;
@@ -107,30 +121,34 @@
       var filterValIdx = 'filter-value-' + filterIdx;
       var filterConfirmIdx = 'filter-confirm-' + filterIdx;
       var filterRemoveIdx = 'filter-remove-' + filterIdx;
+      filterIdx++;
 
       var opSelector = columnInfo[0].type == "string" ? textOpSelector : numOpSelector;
-      opSelector.splice(1, 0, filterOpIdx);
-      opSelector = opSelector.join("").replace("$", " ");
+      if(filterIdx > 0) {
+        opSelector.splice(1, 1, filterOpIdx);
+      }
+      var strOpElement = opSelector.join("").replace("$", " ");
 
       filterRow.push('<li id="filter' + filterIdxClass + '" >')
       filterRow.push("<select class='filter-col " + filterColIdx + "' >")
       for (var i = 0; i < columnInfo.length; i++) {
         filterRow.push("<option value=" + columnInfo[i].name + ">" + columnTitles[i] + "</option>")
       }
-      filterRow.push("</select>")
-      filterRow.push(opSelector)
-      filterRow.push('<input class="filter-value ' + filterValIdx + '" type="text"></input>')
+      filterRow.push("</select>");
+      filterRow.push(strOpElement);
+      filterRow.push('<input class="filter-value ' + filterValIdx + '" type="text"></input>');
       filterRow.push('<span class="filter-confirm ' + filterConfirmIdx + '">&#9989</span>');
       filterRow.push('<span class="filter-remove ' + filterRemoveIdx + '" >&#10006</span>');
-      filterRow.push("</li>")
+      filterRow.push("</li>");
       filterRow = filterRow.join("");
+      newFilter = filterConfirmIdx;
       $("#add-filter").hide();
       $("#filters").append(filterRow);
 
-      $('.filter-remove').hide();
-      $('.filter-col').on('change', filterColEdited);
-      $('.filter-op').on('change', filterOpEdited);
-      $('.filter-value').on('input', function() {
+      $('.' + filterRemoveIdx).hide();
+      $('.' + filterColIdx).on('change', filterColEdited);
+      $('.' + filterOpIdx).on('change', filterOpEdited);
+      $('.' + filterValIdx).on('input', function() {
         filterValEdited($(filterConfirmIdx), );
       });
 
@@ -138,17 +156,37 @@
         var column = $('.' + filterColIdx).val();
         var operator = $('.' + filterOpIdx).val();
         var value = $('.' + filterValIdx).val();
+        filters.push({'field': column,
+                      'type': operator,
+                      'value': value
+        })
         $(this).hide();
-        $('.' + filterRemoveIdx).show()
 
-        $("#csv-table").tabulator("setFilter", column, operator, value);
+
+        $("#csv-table").tabulator("setFilter", filters);
+
+        $('.' + filterRemoveIdx).show()
+        if(newFilter == filterConfirmIdx) {
+          $("#add-filter").show();
+          newFilter = '';
+        }
       })
 
       $('.' + filterRemoveIdx).on('click', function() {
         var column = $('.' + filterColIdx).val();
         var operator = $('.' + filterOpIdx).val();
         var value = $('.' + filterValIdx).val();
-        $("#csv-table").tabulator("removeFilter", column, operator, value);
+
+        console.log("column " + column);
+        console.log("operator " + operator);
+        console.log("value " + value);
+        removeFilter(filters, {'field': column,
+                               'type': operator,
+                               'value': value })
+
+        console.log(filters);
+
+        $("#csv-table").tabulator("setFilter", filters);
 
         $('.' + filterRemoveIdx).parent().remove();
       })
