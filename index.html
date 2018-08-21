@@ -69,12 +69,14 @@
           columns = [rowNumCol];
 
           for (var i = 0; i < headers.length; i++) {
-            columnInfo.push({'name': headers[i], 'type': typeof(data[0][headers[i]])})
-            columnTitles.push(toTitleCase(headers[i]));
+            // columnInfo.push({'name': headers[i], )})
+            // columnTitles.push(toTitleCase(headers[i]));
             columns.push({ 'title': toTitleCase(headers[i]),
-            'field': headers[i],
-            'sortable': true });
-          }
+              'field': headers[i],
+              'sortable': true,
+              'type': typeof(data[0][headers[i]])
+            });
+          };
 
           $("#csv-table").tabulator({'columns': columns,
                                       'layout':"fitColumns",
@@ -114,8 +116,6 @@
 
     function pushFilter(filters, filter, filterIdxClass) {
       var dupFilter = false;
-      console.log(filterIdxClass);
-      console.log(filterDict[filterIdxClass]);
       if (filterDict[filterIdxClass] && filter != filterDict[filterIdxClass]) { // Remove edited filter
         removeFilter(filters, filterDict[filterIdxClass])
       }
@@ -132,8 +132,6 @@
       } else {
         filters.push(filter);
         filterDict[filterIdxClass] = filter;
-        console.log(filterDict);
-        console.log("filters " + filters);
         return true;
       }
     }
@@ -159,7 +157,7 @@
       var filterRemoveIdx = 'filter-remove-' + filterIdx;
       filterIdx++;
 
-      var opSelector = columnInfo[0].type == "string" ? textOpSelector : numOpSelector;
+      var opSelector = numOpSelector; // Row number is first
       if(filterIdx > 0) {
         opSelector.splice(1, 1, filterOpIdx);
       }
@@ -167,8 +165,8 @@
 
       filterRow.push('<li class="filter-row" id="' + filterIdxClass + '" >')
       filterRow.push("<select class='filter-col " + filterColIdx + "' >")
-      for (var i = 0; i < columnInfo.length; i++) {
-        filterRow.push("<option value=" + columnInfo[i].name + ">" + columnTitles[i] + "</option>")
+      for (var i = 0; i < columns.length; i++) {
+        filterRow.push("<option value=" + columns[i].field + ">" + columns[i].title + "</option>")
       }
       filterRow.push("</select>");
       filterRow.push(strOpElement);
