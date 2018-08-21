@@ -54,8 +54,19 @@
 
           data = parsedCSV.data;
           var headers = Object.keys(data[0])
-          console.log(headers)
-          columns = [];
+          var rowNum = 1;
+          var rowNumCol = {title:"Row Number",
+           'field': "rownum",
+           'mutator': function(value, data, type, params, component){
+            //value - original value of the cell
+            //data - the data for the row
+            //type - the type of mutation occuring (data|edit)
+            //params - the mutatorParams object from the column definition
+            //component - when the "type" argument is "edit", this contains the cell component for the edited cell, otherwise it is the column component for the column
+
+          return rowNum++; //return the new value for the cell data.
+        }};
+          columns = [rowNumCol];
 
           for (var i = 0; i < headers.length; i++) {
             columnInfo.push({'name': headers[i], 'type': typeof(data[0][headers[i]])})
