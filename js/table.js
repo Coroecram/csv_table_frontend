@@ -7,8 +7,6 @@ window.onload = function () {
   var Table = CSVTable.Table = {
     data: undefined,
     columns: [],
-    columnInfo: [],
-    columnTitles: [],
     rowNum: 1
   };
 
@@ -33,7 +31,8 @@ window.onload = function () {
           //component - when the "type" argument is "edit", this contains the cell component for the edited cell, otherwise it is the column component for the column
 
         return Table.rowNum++; //return the new value for the cell data.
-      }};
+        },
+        type: 'number'};
         Table.columns = [rowNumCol];
 
         for (var i = 0; i < Table.headers.length; i++) {

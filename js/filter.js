@@ -4,12 +4,14 @@ window.onload = function () {
   if (typeof(window.CSVTable) === "undefined") {
     window.CSVTable = {};
   };
+  var Table = CSVTable.Table;
 
   var Filters = CSVTable.Filters = {
     TEXT_OPERATORS: ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;=', 'IN', 'LIKE'],
+    TEXT_OPERATOR_VALS: ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;=', 'in', 'like'],
     NUM_OPERATORS: ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;='],
-    textOpSelector: ['<select class="filter-op$', 'filter-op-0', '" >'],
-    numOpSelector: ['<select class="filter-op$', 'filter-op-0', '" >'], // Need $ as spaceholder, join trims space
+    strOpSelector: ['<select id="filter-txt-op" class="filter-op filter-row-ele$', 'filter-op-0', '" >'],
+    numOpSelector: ['<select id="filter-num-op" class="filter-op filter-row-ele$', 'filter-op-0', '" >'], // Need $ as spaceholder, join trims space
     filtersApplied: [],
     filterIdx: 0,
     filterDict: {},
@@ -17,14 +19,12 @@ window.onload = function () {
   }
 
   for (var i = 0; i < Filters.TEXT_OPERATORS.length; i++) {
-    Filters.textOpSelector.push('<option value="' + Filters.TEXT_OPERATORS[i] + '" >' + Filters.TEXT_OPERATORS[i] + '</option>')
+    Filters.strOpSelector.push('<option value="' + Filters.TEXT_OPERATOR_VALS[i] + '" >' + Filters.TEXT_OPERATORS[i] + '</option>')
   }
-  Filters.textOpSelector.push("</select>");
 
   for (var i = 0; i < Filters.NUM_OPERATORS.length; i++) {
     Filters.numOpSelector.push('<option value="' + Filters.NUM_OPERATORS[i] + '" >' + Filters.NUM_OPERATORS[i] + '</option>')
   }
-  Filters.numOpSelector.push("</select>");
 
   Filters.removeFilter = function(filter) {
       for(var i = 0; i < this.filters.length; i++) {
@@ -67,24 +67,22 @@ window.onload = function () {
     var filterValIdx = 'filter-value-' + this.filterIdx;
     var filterConfirmIdx = 'filter-confirm-' + this.filterIdx;
     var filterRemoveIdx = 'filter-remove-' + this.filterIdx;
+    var colType = Table.columns[0].type;
+    console.log(Table.columns);
+    var opSelector = this.makeOpSelector(colType, filterOpIdx)
     this.filterIdx++;
 
-    var opSelector = this.numOpSelector; // Row number is first
-    console.log(this);
-    if(this.filterIdx > 0) {
-      opSelector.splice(1, 1, filterOpIdx);
-    }
-    var strOpElement = opSelector.join("").replace("$", " ");
-
     filterRow.push('<li class="filter-row" id="' + filterIdxClass + '" >')
-    filterRow.push("<select class='filter-col " + filterColIdx + "' >")
+    filterRow.push("<div id='filter-selection' class='filter-row-ele'><select class='filter-col filter-row-ele " + filterColIdx + "' >")
     for (var i = 0; i < CSVTable.Table.columns.length; i++) {
       filterRow.push("<option value=" + CSVTable.Table.columns[i].field + ">" + CSVTable.Table.columns[i].title + "</option>")
     }
-    filterRow.push("</select>");
-    filterRow.push(strOpElement);
-    filterRow.push('<input class="filter-value ' + filterValIdx + '" type="text"></input>');
-    filterRow.push('<span class="filter-confirm ' + filterConfirmIdx + '">&#9989</span>');
+    filterRow.push("</select></div>");
+    filterRow.push("<div id='filter-selection' class='filter-row-ele'>")
+    filterRow.push(opSelector);
+    filterRow.push("</select></div>");
+    filterRow.push('<input class="filter-value filter-row-ele ' + filterValIdx + '" type="text"></input>');
+    filterRow.push('<span class="filter-confirm fa fa-check-circle ' + filterConfirmIdx + '"></span>');
     filterRow.push('<span class="filter-remove ' + filterRemoveIdx + '" >&#10006</span>');
     filterRow.push("</li>");
     filterRow = filterRow.join("");
@@ -94,13 +92,19 @@ window.onload = function () {
 
     $('.' + filterRemoveIdx).hide();
     $('.' + filterColIdx).on('change', function() {
-      Filters.filterValEdited($('.' + filterConfirmIdx), );
+      Filters.filterValEdited($('.' + filterConfirmIdx));
+      if(colType != Table.columns[this.selectedIndex].type) {
+        colType = Table.columns[this.selectedIndex].type;
+        console.log("here " + Filters.makeOpSelector(colType, filterOpIdx));
+        $('.' + filterOpIdx).replaceWith(Filters.makeOpSelector(colType, filterOpIdx));
+      }
+
     });
     $('.' + filterOpIdx).on('change', function() {
-      Filters.filterValEdited($('.' + filterConfirmIdx), );
+      Filters.filterValEdited($('.' + filterConfirmIdx));
     });
     $('.' + filterValIdx).on('input', function() {
-      Filters.filterValEdited($('.' + filterConfirmIdx), );
+      Filters.filterValEdited($('.' + filterConfirmIdx));
     });
 
     $('.' + filterConfirmIdx).on('click', function() {
@@ -109,9 +113,6 @@ window.onload = function () {
       var value = $('.' + filterValIdx).val();
       var filtator = $('.' + filterOpIdx).val();
       var value = $('.' + filterValIdx).val();
-      console.log("column " + column)
-      console.log("operator " + operator)
-      console.log("value " + value)
 
       var filterAdded = Filters.pushFilter({
             'field': column,
@@ -121,7 +122,6 @@ window.onload = function () {
 
       if (filterAdded) {
         $(this).hide();
-        console.log(Filters.filters)
         $("#csv-table").tabulator("setFilter", Filters.filters);
 
         $('.' + filterRemoveIdx).show()
@@ -140,6 +140,16 @@ window.onload = function () {
       $('#' + filterIdxClass).remove();
     })
   }.bind(Filters);
+
+  Filters.makeOpSelector = function(type, filterOpIdx) {
+    console.log(type);
+    console.log((type == 'string' ? this.strOpSelector : this.numOpSelector));
+    var opSelector = (type == 'string' ? this.strOpSelector : this.numOpSelector);
+    if(this.filterIdx > 0) {
+      opSelector.splice(1, 1, filterOpIdx);
+    }
+    return opSelector.join("").replace("$", " ");
+  };
 
   Filters.filterValEdited = function(confirmEle) {
     confirmEle.show();

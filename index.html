@@ -26,12 +26,13 @@
   <script src="js/script.js"></script>
   <script src="js/table.js"></script>
   <script src="js/filter.js"></script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 
   <input id="upload" type="file" accept=".csv" />
   <div id="csv-table"></div>
   <ul id="filters">Filters
   </ul>
-  <p id="add-filter">+</p>
+  <p id="add-filter" class="fa fa-plus"></p>
 
   <script>
     $("#upload").on("change", CSVTable.Table.upload);
