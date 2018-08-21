@@ -1,11 +1,11 @@
 'use strict'
 
 window.onload = function () {
-  if (typeof(window.Genesis) === "undefined") {
-    window.Genesis = {};
+  if (typeof(window.CSVTable) === "undefined") {
+    window.CSVTable = {};
   };
 
-  var Filters = Genesis.Filters = {
+  var Filters = CSVTable.Filters = {
     TEXT_OPERATORS: ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;=', 'IN', 'LIKE'],
     NUM_OPERATORS: ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;='],
     textOpSelector: ['<select class="filter-op$', 'filter-op-0', '" >'],
@@ -78,8 +78,8 @@ window.onload = function () {
 
     filterRow.push('<li class="filter-row" id="' + filterIdxClass + '" >')
     filterRow.push("<select class='filter-col " + filterColIdx + "' >")
-    for (var i = 0; i < Genesis.Table.columns.length; i++) {
-      filterRow.push("<option value=" + Genesis.Table.columns[i].field + ">" + Genesis.Table.columns[i].title + "</option>")
+    for (var i = 0; i < CSVTable.Table.columns.length; i++) {
+      filterRow.push("<option value=" + CSVTable.Table.columns[i].field + ">" + CSVTable.Table.columns[i].title + "</option>")
     }
     filterRow.push("</select>");
     filterRow.push(strOpElement);

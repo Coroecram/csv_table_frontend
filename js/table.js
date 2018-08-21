@@ -1,10 +1,10 @@
 'use strict'
 window.onload = function () {
-  if (typeof(window.Genesis) === "undefined") {
-    window.Genesis = {};
+  if (typeof(window.CSVTable) === "undefined") {
+    window.CSVTable = {};
   };
 
-  var Table = Genesis.Table = {
+  var Table = CSVTable.Table = {
     data: undefined,
     columns: [],
     columnInfo: [],
