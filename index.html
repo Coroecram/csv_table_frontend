@@ -24,6 +24,8 @@
   <script src="js/papaparse.min.js"></script>
   <script src="js/util.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/table.js"></script>
+  <script src="js/filter.js"></script>
 
   <input id="upload" type="file" accept=".csv" />
   <div id="csv-table"></div>
@@ -31,202 +33,12 @@
   </ul>
   <p id="add-filter">+</p>
 
-  <script id="csv-uploading">
-    var data;
-    var columns = [];
-    var columnInfo = [];
-    var columnTitles = [];
-
-    document.getElementById("upload").addEventListener("change", upload, false);
-    document.getElementById("add-filter").addEventListener("click", addFilter, false);
+  <script>
+    $("#upload").on("change", Genesis.Table.upload);
+    $("#add-filter").on("click", Genesis.Filters.addFilter);
     $("#filters").hide();
     $("#add-filter").hide();
-
-    function upload(e) {
-      var file = e.target.files[0];
-
-      var reader = new FileReader();
-      reader.readAsText(file);
-      reader.onload = function (event) {
-          var csvData = event.target.result;
-
-          var parsedCSV = Papa.parse(csvData, {'header': true, 'dynamicTyping': true});
-
-          data = parsedCSV.data;
-          var headers = Object.keys(data[0])
-          var rowNum = 1;
-          var rowNumCol = {title:"Row Number",
-           'field': "rownum",
-           'mutator': function(value, data, type, params, component){
-            //value - original value of the cell
-            //data - the data for the row
-            //type - the type of mutation occuring (data|edit)
-            //params - the mutatorParams object from the column definition
-            //component - when the "type" argument is "edit", this contains the cell component for the edited cell, otherwise it is the column component for the column
-
-          return rowNum++; //return the new value for the cell data.
-        }};
-          columns = [rowNumCol];
-
-          for (var i = 0; i < headers.length; i++) {
-            // columnInfo.push({'name': headers[i], )})
-            // columnTitles.push(toTitleCase(headers[i]));
-            columns.push({ 'title': toTitleCase(headers[i]),
-              'field': headers[i],
-              'sortable': true,
-              'type': typeof(data[0][headers[i]])
-            });
-          };
-
-          $("#csv-table").tabulator({'columns': columns,
-                                      'layout':"fitColumns",
-                                      'addRowPos':"top",
-                                      'pagination':"local",
-                                      'paginationSize':7,
-                                      'movableColumns':true,
-                                      'resizableRows':true
-                                    });
-          $("#csv-table").tabulator("setData", data.slice(0,-1));
-          $("#filters").show();
-          $("#add-filter").show();
-      }
-
-    }
-
-    var TEXT_OPERATORS = ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;=', 'IN', 'LIKE'];
-    var NUM_OPERATORS  = ['=', '!=', '&lt;', '&gt;', '&lt;=', '&gt;='];
-    var textOpSelector = ['<select class="filter-op$', 'filter-op-0', '" >'];
-    var numOpSelector  = ['<select class="filter-op$', 'filter-op-0', '" >']; // Need $ as spaceholder, join trims space
-    var filtersApplied = [];
-    var filterRow = [];
-    var filterIdx = 0;
-    var newFilter = '';
-    var filterDict = {};
-    var filters = [];
-
-    function removeFilter(filters, filter) {
-      for(var i = 0;i < filters.length;i++) {
-        if (filters[i].field == filter.field &
-            filters[i].type == filter.type &
-            filters[i].value == filter.value) {
-              filters.splice(i, 1);
-        }
-      }
-    }
-
-    function pushFilter(filters, filter, filterIdxClass) {
-      var dupFilter = false;
-      if (filterDict[filterIdxClass] && filter != filterDict[filterIdxClass]) { // Remove edited filter
-        removeFilter(filters, filterDict[filterIdxClass])
-      }
-      for(var i = 0;i < filters.length;i++) {
-        if (filters[i].field == filter.field &
-            filters[i].type  == filter.type &
-            filters[i].value == filter.value) {
-              dupFilter = true;
-        }
-      }
-
-      if(dupFilter) {
-        return false;
-      } else {
-        filters.push(filter);
-        filterDict[filterIdxClass] = filter;
-        return true;
-      }
-    }
-
-    for (var i = 0; i < TEXT_OPERATORS.length; i++) {
-      textOpSelector.push('<option value="' + TEXT_OPERATORS[i] + '" >' + TEXT_OPERATORS[i] + '</option>')
-    }
-    textOpSelector.push("</select>");
-
-    for (var i = 0; i < NUM_OPERATORS.length; i++) {
-      numOpSelector.push('<option value="' + NUM_OPERATORS[i] + '" >' + NUM_OPERATORS[i] + '</option>')
-    }
-    numOpSelector.push("</select>");
-
-    function addFilter() {
-      filterRow = [];
-
-      var filterIdxClass = 'filter-' + filterIdx;
-      var filterColIdx = 'filter-col-' + filterIdx;
-      var filterOpIdx = 'filter-op-' + filterIdx;
-      var filterValIdx = 'filter-value-' + filterIdx;
-      var filterConfirmIdx = 'filter-confirm-' + filterIdx;
-      var filterRemoveIdx = 'filter-remove-' + filterIdx;
-      filterIdx++;
-
-      var opSelector = numOpSelector; // Row number is first
-      if(filterIdx > 0) {
-        opSelector.splice(1, 1, filterOpIdx);
-      }
-      var strOpElement = opSelector.join("").replace("$", " ");
-
-      filterRow.push('<li class="filter-row" id="' + filterIdxClass + '" >')
-      filterRow.push("<select class='filter-col " + filterColIdx + "' >")
-      for (var i = 0; i < columns.length; i++) {
-        filterRow.push("<option value=" + columns[i].field + ">" + columns[i].title + "</option>")
-      }
-      filterRow.push("</select>");
-      filterRow.push(strOpElement);
-      filterRow.push('<input class="filter-value ' + filterValIdx + '" type="text"></input>');
-      filterRow.push('<span class="filter-confirm ' + filterConfirmIdx + '">&#9989</span>');
-      filterRow.push('<span class="filter-remove ' + filterRemoveIdx + '" >&#10006</span>');
-      filterRow.push("</li>");
-      filterRow = filterRow.join("");
-      newFilter = filterConfirmIdx;
-      $("#add-filter").hide();
-      $("#filters").append(filterRow);
-
-      $('.' + filterRemoveIdx).hide();
-      $('.' + filterColIdx).on('change', function() {
-        filterValEdited($('.' + filterConfirmIdx), );
-      });
-      $('.' + filterOpIdx).on('change', function() {
-        filterValEdited($('.' + filterConfirmIdx), );
-      });
-      $('.' + filterValIdx).on('input', function() {
-        filterValEdited($('.' + filterConfirmIdx), );
-      });
-
-      $('.' + filterConfirmIdx).on('click', function() {
-        var column = $('.' + filterColIdx).val();
-        var operator = $('.' + filterOpIdx).val();
-        var value = $('.' + filterValIdx).val();
-        var filterAdded = pushFilter(filters, {
-              'field': column,
-              'type': operator,
-              'value': value
-        }, filterIdxClass)
-
-        if (filterAdded) {
-          $(this).hide();
-          $("#csv-table").tabulator("setFilter", filters);
-
-          $('.' + filterRemoveIdx).show()
-          if(newFilter == filterConfirmIdx) {
-            $("#add-filter").show();
-            newFilter = '';
-          }
-        }
-      })
-
-      $('.' + filterRemoveIdx).on('click', function() {
-        removeFilter(filters, filterDict[filterIdxClass])
-
-        $("#csv-table").tabulator("setFilter", filters);
-
-        $('#' + filterIdxClass).remove();
-      })
-    }
-
-    function filterValEdited(confirmEle) {
-      confirmEle.show();
-    }
-
   </script>
-
 
 
 </body>
