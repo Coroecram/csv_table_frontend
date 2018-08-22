@@ -38,25 +38,27 @@ window.onload = function () {
 
   Filters.pushFilter = function(filter, filterIdxClass) {
     var dupFilter = false;
-    if (this.filterDict[filterIdxClass] && filter != this.filterDict[filterIdxClass]) { // Remove edited filter
-      this.removeFilter(this.filterDict[filterIdxClass])
+    if (Filters.filterDict[filterIdxClass] && filter != Filters.filterDict[filterIdxClass]) { // Remove edited filter
+      Filters.removeFilter(Filters.filterDict[filterIdxClass])
     }
-    for(var i = 0; i < filters.length; i++) {
-      if (this.filters[i].field == filter.field &
-          this.filters[i].type  == filter.type &
-          this.filters[i].value == filter.value) {
+
+    for(var i = 0; i < Filters.filters.length; i++) {
+      if (Filters.filters[i].field == filter.field &
+          Filters.filters[i].type  == filter.type &
+          Filters.filters[i].value == filter.value) {
             dupFilter = true;
+            alert("Cannot add duplicate filter")
       }
     }
 
     if(dupFilter) {
       return false;
     } else {
-      this.filters.push(filter);
-      this.filterDict[filterIdxClass] = filter;
+      Filters.filters.push(filter);
+      Filters.filterDict[filterIdxClass] = filter;
       return true;
     }
-  }.bind(Filters);
+  };
 
   Filters.addFilter = function() {
     var filterRow = [];
@@ -68,7 +70,6 @@ window.onload = function () {
     var filterConfirmIdx = 'filter-confirm-' + this.filterIdx;
     var filterRemoveIdx = 'filter-remove-' + this.filterIdx;
     var colType = Table.columns[0].type;
-    console.log(Table.columns);
     var opSelector = this.makeOpSelector(colType, filterOpIdx)
     this.filterIdx++;
 
@@ -95,7 +96,6 @@ window.onload = function () {
       Filters.filterValEdited($('.' + filterConfirmIdx));
       if(colType != Table.columns[this.selectedIndex].type) {
         colType = Table.columns[this.selectedIndex].type;
-        console.log("here " + Filters.makeOpSelector(colType, filterOpIdx));
         $('.' + filterOpIdx).replaceWith(Filters.makeOpSelector(colType, filterOpIdx));
       }
 
@@ -142,8 +142,6 @@ window.onload = function () {
   }.bind(Filters);
 
   Filters.makeOpSelector = function(type, filterOpIdx) {
-    console.log(type);
-    console.log((type == 'string' ? this.strOpSelector : this.numOpSelector));
     var opSelector = (type == 'string' ? this.strOpSelector : this.numOpSelector);
     if(this.filterIdx > 0) {
       opSelector.splice(1, 1, filterOpIdx);
