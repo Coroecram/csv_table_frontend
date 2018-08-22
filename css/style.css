@@ -39,6 +39,9 @@
    -webkit-appearance: none;
 }
 
+#upload {
+  margin: 5px;
+}
 
 .filter-row {
   size: 20px;
@@ -74,8 +77,8 @@
 
 #created-by {
   display: block;
+  float: right;
   margin: 5px;
-  width: 100%;
 }
 
 #created-by > a {
