@@ -71,3 +71,13 @@
 .filter-op {
   width: 80px;
 }
+
+#created-by {
+  display: block;
+  margin: 5px;
+  width: 100%;
+}
+
+#created-by > a {
+  color: #3759D7;
+}
