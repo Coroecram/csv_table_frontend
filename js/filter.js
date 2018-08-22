@@ -84,7 +84,7 @@ window.onload = function () {
     filterRow.push("</select></div>");
     filterRow.push('<input class="filter-value filter-row-ele ' + filterValIdx + '" type="text"></input>');
     filterRow.push('<span class="filter-confirm fa fa-check-circle ' + filterConfirmIdx + '"></span>');
-    filterRow.push('<span class="filter-remove ' + filterRemoveIdx + '" >&#10006</span>');
+    filterRow.push('<span class="filter-remove fa fa-times-circle ' + filterRemoveIdx + '" ></span>');
     filterRow.push("</li>");
     filterRow = filterRow.join("");
     newFilter = filterConfirmIdx;
